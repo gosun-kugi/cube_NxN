@@ -3,12 +3,14 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Speed Cube Simulator (N x N)</title>
   <style>
     body {
       margin: 0;
       padding: 6px;
+      /* バナー広告が表示される下部エリアにセーフエリア/余白を確保 */
+      padding-bottom: 70px; 
       background-color: #111318;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       display: flex;
@@ -20,7 +22,7 @@
       user-select: none;
       -webkit-user-select: none;
       overscroll-behavior: none;
-      overflow-y: auto; /* 下が見切れた場合にスクロールできるように変更 */
+      overflow-y: auto;
       color: #f3f4f6;
     }
 
@@ -70,7 +72,6 @@
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
 
-    /* セーブ・ロード・カスタムN用の特殊ボタン */
     .mode-btn.utility-btn {
       color: #60a5fa;
     }
@@ -268,7 +269,7 @@
     .clear-history-btn { background-color: #374151; color: #e5e7eb; border: none; }
     .clear-history-btn:hover { background-color: #4b5563; }
 
-    /* モーダルダイアログ（共通） */
+    /* モーダルダイアログ */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -290,6 +291,8 @@
       box-shadow: 0 10px 25px rgba(0,0,0,0.5);
       max-width: 420px;
       width: 90%;
+      max-height: 90vh; /* モバイル画面はみ出し防止 */
+      overflow-y: auto;  /* スクロール可能に */
     }
     .modal-content h3 {
       margin-top: 0;
@@ -330,7 +333,6 @@
       color: white;
     }
 
-    /* 保存ロードパネルの固有スタイル */
     .save-load-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -356,14 +358,15 @@
 
     @media (min-width: 850px) {
       body {
-        padding: 12px; /* 少し余白を詰めて縦幅を広く確保 */
+        padding: 12px;
+        padding-bottom: 70px; /* 大画面でも広告領域を考慮 */
       }
       .container {
         max-width: 1200px;
         width: 100%;
-        height: calc(100vh - 24px); /* ビューポートに完全に追従 */
-        max-height: 850px; /* あまりに縦長な4Kモニタ等での崩れを防止 */
-        min-height: 0; /* フレックスアイテムとしての縮小を許可 */
+        height: calc(100vh - 94px); /* 高さを引いてバナー広告領域を完全に回避 */
+        max-height: 850px;
+        min-height: 0;
         flex-direction: row;
         gap: 24px;
         background: #1a1d24;
@@ -387,7 +390,7 @@
         flex: 1;
         width: 100%;
         height: 100%;
-        min-height: 0; /* 高さが小さくなっても縮小可能にする */
+        min-height: 0;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -417,7 +420,6 @@
         border: 1px solid #2d313c;
       }
 
-      /* カスタムスクロールバーのデザイン向上 */
       .controls::-webkit-scrollbar {
         width: 6px;
       }
@@ -463,7 +465,6 @@
     </div>
 
     <div class="controls">
-      <!-- 世代サイズによってボタンを動的に表示 -->
       <div id="dynamic-controls"></div>
 
       <div class="history-row">
@@ -516,6 +517,15 @@
 
       <hr style="border: none; border-top: 1px solid #2d313c; margin: 15px 0;">
 
+      <p style="font-size: 12px; color: #9ca3af; margin-bottom: 4px;">ファイルとして直接保存/読込 (スマホ推奨)</p>
+      <div style="margin-bottom: 15px; display: flex; gap: 8px; justify-content: center;">
+        <button class="ok-btn" onclick="saveToTxtFile()" style="background-color: #10b981; flex: 1; margin: 0;">.txtファイルに保存</button>
+        <button class="ok-btn" onclick="triggerFileImport()" style="background-color: #8b5cf6; flex: 1; margin: 0;">.txtファイルから読込</button>
+        <input type="file" id="txtFileInput" accept=".txt" style="display: none;" onchange="importFromFile(event)">
+      </div>
+
+      <hr style="border: none; border-top: 1px solid #2d313c; margin: 15px 0;">
+
       <p style="font-size: 12px; color: #9ca3af; margin-bottom: 4px;">外部テキスト（保存用コード）のインポート/エクスポート</p>
       <textarea id="saveCodeArea" placeholder="ここにセーブデータを貼り付けるか、コピーしてください。" spellcheck="false"></textarea>
       
@@ -529,6 +539,9 @@
       </div>
     </div>
   </div>
+
+  <!-- Capacitor (Bridge) スクリプトの読み込み -->
+  <script src="capacitor.js"></script>
 
   <script>
     const canvas = document.getElementById("puzzleCanvas");
@@ -550,14 +563,44 @@
     let puzzle = null;
     let currentMode = 3;
 
+    // --- Capacitor + AdMob (広告) 連携処理 ---
+    async function initAndroidAdMob() {
+      // Capacitor環境(Android実機等)でのみ実行する
+      if (typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform()) {
+        try {
+          // JSモジュールを動的インポート
+          const { AdMob, BannerAdSize, BannerAdPosition } = await import('@capacitor-community/admob');
+          
+          await AdMob.initialize({
+            requestTrackingAuthorization: true,
+          });
+
+          // 広告バナーの表示
+          await AdMob.showBanner({
+            adId: 'ca-app-pub-3940256099942544/6300978111', // テスト用バナーID (本番時は取得したIDに変更)
+            adSize: BannerAdSize.BANNER,
+            position: BannerAdPosition.BOTTOM_CENTER,
+            margin: 0,
+            isTesting: true // 本番公開時はfalseに変更
+          });
+          console.log("AdMob Banner Loaded successfully.");
+        } catch (e) {
+          console.error("AdMob initialization failed: ", e);
+        }
+      }
+    }
+
+    // ドキュメントロード完了後に広告をロード
+    window.addEventListener('DOMContentLoaded', () => {
+      initAndroidAdMob();
+    });
+
     // --- 各サイズ向け Notation を動的生成する関数 ---
-    // Nが6以上の時: R, 2r, 3r, ... 3l, 2l, L のような命名規則に対応
     function getLayerLabels(N, axis) {
       const labels = [];
       const mid = Math.floor(N / 2);
       const isOdd = N % 2 !== 0;
 
-      // 軸ごとの右/中央/左のベース表記
       let rChar = "R", lChar = "L", mChar = "M";
       if (axis === "A") { rChar = "U"; lChar = "D"; mChar = "E"; }
       if (axis === "B") { rChar = "F"; lChar = "B"; mChar = "S"; }
@@ -567,21 +610,18 @@
 
       for (let r = 0; r < N; r++) {
         if (r === 0) {
-          labels.push(rChar); // 右（右手前）
+          labels.push(rChar);
         } else if (r === N - 1) {
-          labels.push(lChar); // 左（左奥）
+          labels.push(lChar);
         } else if (isOdd && r === mid) {
-          labels.push(mChar); // 奇数次の完全中心
+          labels.push(mChar);
         } else if (r < mid) {
-          // 右側寄り（インデックス小）
-          // r=1のときは小文字の'r'、'u'、'f'
           if (r === 1) {
             labels.push(rLower);
           } else {
             labels.push(`${r}${rLower}`);
           }
         } else {
-          // 左側寄り（インデックス大）
           const distToLeft = N - 1 - r;
           if (distToLeft === 1) {
             labels.push(lLower);
@@ -593,36 +633,30 @@
       return labels;
     }
 
-    // 動的対応のための MOVES_DICT（指定の N に対して動的マップオブジェクトを作成する）
     function generateMovesMap(N) {
       const map = {};
       const axes = ["A", "B", "C"];
       
       for (const axis of axes) {
         const labels = getLayerLabels(N, axis);
-        // 通常の個別層回転
         for (let r = 0; r < N; r++) {
           const sym = labels[r];
-          // 末尾が U, F, R, u, f, r のいずれかであれば UFR系列
           const isUFR = /[UFRufr]$/.test(sym);
           
           if (isUFR) {
-            // U, F, R系列: 反時計回りがプライム
-            map[sym] = [axis, r, 1];       // プライムなし = 時計回り (1)
-            map[`${sym}'`] = [axis, r, -1]; // プライムあり = 反時計回り (-1)
+            map[sym] = [axis, r, 1];
+            map[`${sym}'`] = [axis, r, -1];
           } else {
-            // D, B, L, E, S, M系列: 時計回りがプライム
-            map[sym] = [axis, r, -1];      // プライムなし = 反時計回り (-1)
-            map[`${sym}'`] = [axis, r, 1];  // プライムあり = 時計回り (1)
+            map[sym] = [axis, r, -1];
+            map[`${sym}'`] = [axis, r, 1];
           }
         }
-        // 全体キューブ回転 (U, F, Rと同じ規則: 反時計回りがプライム)
         let allSym = "x";
         if (axis === "A") allSym = "y";
         if (axis === "B") allSym = "z";
         
-        map[allSym] = [axis, "ALL", 1];       // プライムなし = 時計回り (1)
-        map[`${allSym}'`] = [axis, "ALL", -1]; // プライムあり = 反時計回り (-1)
+        map[allSym] = [axis, "ALL", 1];
+        map[`${allSym}'`] = [axis, "ALL", -1];
       }
       return map;
     }
@@ -727,18 +761,15 @@
           C: [this.cx + this.side_length / 2, this.cy + (height * 1) / 3]
         };
         
-        // Nの大きさに応じた半径の動的設計（はみ出さないようにスケーリング）
-        this.radii = [];
-        // 中心から最外層までの空間をスパン150px〜245px（N=2は180px〜240px）に均等に割り振る
         const minRadius = size === 2 ? 180 : 150;
         const maxRadius = size === 2 ? 240 : (size > 8 ? 255 : 240);
         const radiusStep = size > 1 ? (maxRadius - minRadius) / (size - 1) : 0;
         
+        this.radii = [];
         for (let r = 0; r < size; r++) {
           this.radii.push(minRadius + r * radiusStep);
         }
 
-        // 描画サイズを動的に調整（Nが大きいほど小さくする）
         if (size <= 2) this.ball_radius = 22;
         else if (size === 3) this.ball_radius = 18;
         else if (size === 4) this.ball_radius = 13;
@@ -811,7 +842,6 @@
           }
         }
 
-        // 交差座標の数は N * N * 6
         const target_count = this.size * this.size * 6;
         this.slots = unique_pts.slice(0, target_count);
         this.slot_origins = slot_origins.slice(0, target_count);
@@ -830,7 +860,6 @@
           }
         }
 
-        // N*Nギア連動用のマトリックスインデックス計算
         const R = this.size;
         const base_L = [];
         for (let r2 = R - 1; r2 >= 0; r2--) {
@@ -842,14 +871,14 @@
         this.outer_groups = {};
         this.inner_groups = {};
 
-        this.outer_groups["C"] = base_L;                          // L
-        this.inner_groups["C"] = base_L.map(idx => idx - 1);      // R
+        this.outer_groups["C"] = base_L;
+        this.inner_groups["C"] = base_L.map(idx => idx - 1);
 
-        this.inner_groups["A"] = base_L.map(idx => idx - 1 + 2);  // U
-        this.outer_groups["A"] = base_L.map(idx => idx - 1 + 3);  // D
+        this.inner_groups["A"] = base_L.map(idx => idx - 1 + 2);
+        this.outer_groups["A"] = base_L.map(idx => idx - 1 + 3);
 
-        this.inner_groups["B"] = base_L.map(idx => idx - 1 + 4);  // F
-        this.outer_groups["B"] = base_L.map(idx => idx - 1 + 5);  // B
+        this.inner_groups["B"] = base_L.map(idx => idx - 1 + 4);
+        this.outer_groups["B"] = base_L.map(idx => idx - 1 + 5);
       }
 
       generate_permutation_tables() {
@@ -1017,7 +1046,6 @@
       }
 
       apply_rotation_instantly(axis, ring_idx, direction) {
-        // 巻き戻し(Undo)ができるように、現在の配色状態を履歴スタック(state_history)へ保存
         this.state_history.push([...this.ball_colors]);
         
         addMoveToHistory(axis, ring_idx, direction);
@@ -1102,7 +1130,6 @@
           }
         }
 
-        // ラベルはNが10以下のときのみ重なって見づらくなるのを避けるため美しく描画
         const fontSize = this.size > 9 ? "16px" : (this.size > 6 ? "24px" : "32px");
         ctx.font = `bold ${fontSize} Arial`;
         ctx.fillStyle = "rgba(156, 163, 175, 0.35)";
@@ -1117,13 +1144,11 @@
 
         for (let r_idx = 0; r_idx < this.radii.length; r_idx++) {
           const r = this.radii[r_idx];
-
-          // 6x6以上の時、円の名前を示すテキストがオーバーラップするのを防ぐため、互い違いに配置
           const staggerAngle = (this.size >= 6) ? (r_idx % 2 === 0 ? 0.12 : -0.12) : 0;
 
           const angle130 = -140 * (Math.PI / 180) + staggerAngle;
-          const angleB = Math.PI + staggerAngle;   // Bは左方向(π)基準からずらす
-          const angleC = 0 + staggerAngle;         // Cは右方向(0)基準からずらす
+          const angleB = Math.PI + staggerAngle;
+          const angleC = 0 + staggerAngle;
 
           const pos = {
             A: [this.centers["A"][0] + r * Math.cos(angle130), this.centers["A"][1] + r * Math.sin(angle130)],
@@ -1190,7 +1215,6 @@
       ];
 
       const isLargeN = size > 6;
-      // 7x7以上の場合、回転ボタンを2段に配置
       const isSplitTwoRows = size >= 7;
 
       for (let ax of axes) {
@@ -1198,7 +1222,6 @@
         row.className = "control-row";
         row.style.gridTemplateColumns = `85px repeat(${size + 1}, 1fr)`;
 
-        // Nが大きくボタンが多い場合にフォントサイズやパディングを縮小する
         if (isLargeN) {
           row.style.padding = "4px";
           row.style.gap = "2px";
@@ -1210,33 +1233,23 @@
         if (isLargeN) label.style.fontSize = "8px";
         row.appendChild(label);
 
-        // 動的表記に基づくボタンマッピング
         const labels = getLayerLabels(size, ax.id);
 
-        // 外側の層（インデックスの大きい側、すなわち最後尾のレイヤー）から順に左からボタンを配置
         for (let r = size - 1; r >= 0; r--) {
           const btnGroup = document.createElement("div");
           btnGroup.className = "btn-group";
           
-          // 7x7以上の時はボタンを縦方向(column)に並べることで、上段が時計回り、下段が反時計回りになる
           if (isSplitTwoRows) {
             btnGroup.style.flexDirection = "column";
             btnGroup.style.gap = "2px";
           }
 
           const sym = labels[r];
-          // 末尾文字をベースに UFR 系列かどうかを判定
           const isUFR = /[UFRufr]$/.test(sym);
           
-          // 操作の並びは元のまま維持
-          // 左クリック(上段)：常に時計回り (1)
-          // 右クリック(下段)：常に反時計回り (-1)
           const dirNormal = 1;
           const dirPrime = -1;
 
-          // ただし、表示する文字は系列ごとに切り替える
-          // UFR系列：時計回り = プライムなし、反時計回り = プライムあり
-          // DBL・ESM系列：時計回り = プライムあり、反時計回り = プライムなし
           const textLeft = isUFR ? sym : `${sym}'`;
           const textRight = isUFR ? `${sym}'` : sym;
 
@@ -1266,7 +1279,6 @@
           row.appendChild(btnGroup);
         }
 
-        // 全体回転 (y, z, xなどのALL修飾語 - UFRに準拠)
         const wholeGroup = document.createElement("div");
         wholeGroup.className = "btn-group";
         if (isSplitTwoRows) {
@@ -1328,7 +1340,6 @@
       createControls(size);
     }
 
-    // カスタム入力ダイアログ
     function openCustomModal() {
       if (puzzle && (puzzle.is_animating || puzzle.move_queue.length > 0)) return;
       document.getElementById("customModal").style.display = "flex";
@@ -1348,7 +1359,7 @@
       switchMode(inputVal);
     }
 
-    // --- 保存 & 読込 (Save / Load) モーダルコントロール ---
+    // --- 保存 & 読込 ---
     function openSaveLoadModal() {
       document.getElementById("saveLoadModal").style.display = "flex";
       updateBrowserStatusText();
@@ -1359,7 +1370,6 @@
       document.getElementById("saveLoadModal").style.display = "none";
     }
 
-    // 保存データの構成オブジェクトを生成
     function createSaveDataObject() {
       if (!puzzle) return null;
       return {
@@ -1371,14 +1381,12 @@
       };
     }
 
-    // 保存データをシミュレーターに適用
     function applySaveDataObject(data) {
       if (!data || !data.size || !data.ball_colors) {
         alert("エラー: 保存データの形式が正しくありません。");
         return false;
       }
       
-      // 1. モード(サイズ)の切り替え
       currentMode = data.size;
       document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
       const fixedModes = [2, 3, 4, 5];
@@ -1391,16 +1399,13 @@
         customBtn.textContent = `${currentMode}x${currentMode}`;
       }
 
-      // 2. パズルの物理構造を再構築
       puzzle = new MatrixGearPuzzle(currentMode);
       createControls(currentMode);
 
-      // 3. 配色状態、各種履歴を代入して反映
       puzzle.ball_colors = [...data.ball_colors];
       moveHistory = [...(data.moveHistory || [])];
       puzzle.state_history = [...(data.state_history || [])];
 
-      // 4. UI側（操作履歴表示）の更新
       const display = document.getElementById("historyDisplay");
       display.textContent = formatHistory(moveHistory);
       display.scrollLeft = display.scrollWidth;
@@ -1408,7 +1413,6 @@
       return true;
     }
 
-    // ブラウザ(LocalStorage)へのデータ一時保存
     function saveToBrowser() {
       const dataObj = createSaveDataObject();
       if (!dataObj) return;
@@ -1421,7 +1425,6 @@
       }
     }
 
-    // ブラウザ(LocalStorage)からのデータ一時復元
     function loadFromBrowser() {
       try {
         const raw = localStorage.getItem("gear_puzzle_autosave");
@@ -1438,7 +1441,6 @@
       }
     }
 
-    // 一時保存ステータスラベルの更新
     function updateBrowserStatusText() {
       const label = document.getElementById("browserStatus");
       const raw = localStorage.getItem("gear_puzzle_autosave");
@@ -1454,17 +1456,74 @@
       }
     }
 
-    // セーブコードを外部のテキストエリアへ書き出し（エクスポート）
+    // --- TXTファイル形式のセーブ / ロード機能 ---
+    function saveToTxtFile() {
+      const dataObj = createSaveDataObject();
+      if (!dataObj) return;
+      try {
+        const jsonStr = JSON.stringify(dataObj);
+        // Base64に変換してファイルサイズ軽量化と改行破損防止
+        const b64 = btoa(unescape(encodeURIComponent(jsonStr)));
+        const blob = new Blob([b64], { type: "text/plain;charset=utf-8" });
+        
+        const now = new Date();
+        const dateStr = now.getFullYear() +
+          String(now.getMonth() + 1).padStart(2, '0') +
+          String(now.getDate()).padStart(2, '0') + "_" +
+          String(now.getHours()).padStart(2, '0') +
+          String(now.getMinutes()).padStart(2, '0');
+        const filename = `cube_save_${dataObj.size}x${dataObj.size}_${dateStr}.txt`;
+        
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+      } catch (err) {
+        alert("ファイルの保存に失敗しました: " + err.message);
+      }
+    }
+
+    function triggerFileImport() {
+      document.getElementById("txtFileInput").click();
+    }
+
+    function importFromFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const b64 = e.target.result.trim();
+        try {
+          const jsonStr = decodeURIComponent(escape(atob(b64)));
+          const dataObj = JSON.parse(jsonStr);
+          if (applySaveDataObject(dataObj)) {
+            alert("ファイルからパズルの状態を完全に復元しました！");
+            closeSaveLoadModal();
+          }
+        } catch (err) {
+          alert("インポートに失敗しました。ファイルが破損しているか、非対応ファイルの可能性があります。\nエラー: " + err.message);
+        }
+        event.target.value = ""; // リセット
+      };
+      reader.onerror = function() {
+        alert("ファイルの読み込み中にエラーが発生しました。");
+        event.target.value = ""; // リセット
+      };
+      reader.readAsText(file);
+    }
+
     function exportToText() {
       const dataObj = createSaveDataObject();
       if (!dataObj) return;
       try {
         const jsonStr = JSON.stringify(dataObj);
-        // Base64に変換して短縮かつ改ざんされにくくする（UTF-8エンコード対応）
         const b64 = btoa(unescape(encodeURIComponent(jsonStr)));
         document.getElementById("saveCodeArea").value = b64;
         
-        // 自動でクリップボードへコピーを試行する
         const area = document.getElementById("saveCodeArea");
         area.select();
         document.execCommand('copy');
@@ -1474,7 +1533,6 @@
       }
     }
 
-    // セーブコードを外部から取り込み（インポート）
     function importFromText() {
       const b64 = document.getElementById("saveCodeArea").value.trim();
       if (!b64) {
@@ -1482,7 +1540,6 @@
         return;
       }
       try {
-        // Base64からデコード
         const jsonStr = decodeURIComponent(escape(atob(b64)));
         const dataObj = JSON.parse(jsonStr);
         if (applySaveDataObject(dataObj)) {
@@ -1494,14 +1551,13 @@
       }
     }
 
-    // --- パズル動作 of 回転指示 ---
+    // --- パズル操作指示 ---
     function rotate(axis, ringIdx, dir) {
       if (!puzzle.is_animating && puzzle.move_queue.length === 0) {
         puzzle.trigger_rotation(axis, ringIdx, dir);
       }
     }
 
-    // スクランブル生成時の動き
     function scramblePuzzle() {
       if (!puzzle.is_animating && puzzle.move_queue.length === 0) {
         const steps = currentMode * 10;
@@ -1572,7 +1628,6 @@
       requestAnimationFrame(gameLoop);
     }
 
-    // デフォルトで3x3として起動
     switchMode(3);
     requestAnimationFrame(gameLoop);
 
