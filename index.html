@@ -1017,6 +1017,9 @@
       }
 
       apply_rotation_instantly(axis, ring_idx, direction) {
+        // 巻き戻し(Undo)ができるように、現在の配色状態を履歴スタック(state_history)へ保存
+        this.state_history.push([...this.ball_colors]);
+        
         addMoveToHistory(axis, ring_idx, direction);
         const pKey = `${axis}_${ring_idx}_${direction}`;
         const mappingTable = this.permutation_tables[pKey];
