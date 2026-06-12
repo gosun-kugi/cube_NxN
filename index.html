@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 
 <head>
   <meta charset="UTF-8">
@@ -446,19 +446,19 @@
         <button class="mode-btn active" onclick="switchMode(3)" id="mode-3">3x3</button>
         <button class="mode-btn" onclick="switchMode(4)" id="mode-4">4x4</button>
         <button class="mode-btn" onclick="switchMode(5)" id="mode-5">5x5</button>
-        <button class="mode-btn" onclick="openCustomModal()" id="mode-custom">Custom N</button>
-        <button class="mode-btn utility-btn" onclick="openSaveLoadModal()" title="保存と読込">💾 Save/Load</button>
+        <button class="mode-btn" onclick="openCustomModal()" id="mode-custom" data-i18n="customN">Custom N</button>
+        <button class="mode-btn utility-btn" onclick="openSaveLoadModal()" id="save-load-utility-btn" data-i18n="saveLoad">💾 Save/Load</button>
       </div>
 
       <div class="canvas-area">
-        <button class="scramble-btn" onclick="scramblePuzzle()">Scramble</button>
-        <button class="reset-btn" onclick="resetPuzzle()">Reset</button>
-        <button class="copy-img-btn" id="copyImgBtn" onclick="copyCanvasImage()" title="画像をコピー">
+        <button class="scramble-btn" onclick="scramblePuzzle()" data-i18n="scramble">Scramble</button>
+        <button class="reset-btn" onclick="resetPuzzle()" data-i18n="reset">Reset</button>
+        <button class="copy-img-btn" id="copyImgBtn" onclick="copyCanvasImage()">
           <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
           </svg>
-          Image
+          <span data-i18n="image">Image</span>
         </button>
         <canvas id="puzzleCanvas" width="1000" height="700"></canvas>
       </div>
@@ -468,9 +468,9 @@
       <div id="dynamic-controls"></div>
 
       <div class="history-row">
-        <div class="history-label">📜:</div>
+        <div class="history-label" data-i18n="history">📜:</div>
         <div id="historyDisplay"></div>
-        <button class="copy-history-btn" onclick="copyHistory()" title="履歴をコピー">
+        <button class="copy-history-btn" onclick="copyHistory()">
           <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
@@ -479,13 +479,13 @@
       </div>
      
       <div class="action-row">
-        <button class="undo-btn" onclick="undoPuzzle()">Undo</button>
-        <button class="clear-history-btn" onclick="clearHistory()">Clear History</button>
+        <button class="undo-btn" onclick="undoPuzzle()" data-i18n="undo">Undo</button>
+        <button class="clear-history-btn" onclick="clearHistory()" data-i18n="clearHistory">Clear History</button>
       </div>
  
       <div class="sequence-row">
-        <input type="text" id="sequenceInput" placeholder="例: R U R' U' y L' (層は動的にマップ)">
-        <button class="play-btn" onclick="playSequence()">Run</button>
+        <input type="text" id="sequenceInput">
+        <button class="play-btn" onclick="playSequence()" data-i18n="run">Run</button>
       </div>
 
     </div>
@@ -494,11 +494,11 @@
   <!-- N入力ダイアログ -->
   <div class="modal-overlay" id="customModal">
     <div class="modal-content">
-      <h3>キューブサイズ(N)を入力</h3>
+      <h3 data-i18n="customNTitle">Enter cube size (N)</h3>
       <input type="number" id="customNInput" value="6" min="2" max="15">
       <div>
-        <button class="ok-btn" onclick="submitCustomN()">OK</button>
-        <button class="cancel-btn" onclick="closeCustomModal()">Cancel</button>
+        <button class="ok-btn" onclick="submitCustomN()" data-i18n="ok">OK</button>
+        <button class="cancel-btn" onclick="closeCustomModal()" data-i18n="cancel">Cancel</button>
       </div>
     </div>
   </div>
@@ -506,36 +506,36 @@
   <!-- セーブ/ロード用モーダルダイアログ -->
   <div class="modal-overlay" id="saveLoadModal">
     <div class="modal-content">
-      <h3>💾 保存と復元 (Save / Load)</h3>
+      <h3 data-i18n="saveLoadTitle">💾 Save & Restore</h3>
       
-      <p style="font-size: 12px; color: #9ca3af; margin-bottom: 8px;">ブラウザの一時記憶(LocalStorage)への保存/ロード</p>
+      <p style="font-size: 12px; color: #9ca3af; margin-bottom: 8px;" data-i18n="browserSection">Save/Load to Browser LocalStorage</p>
       <div class="save-load-grid">
-        <button class="browser-btn" onclick="saveToBrowser()">ブラウザに一時保存</button>
-        <button class="browser-btn" onclick="loadFromBrowser()">一時保存から読込</button>
+        <button class="browser-btn" onclick="saveToBrowser()" data-i18n="saveBrowserBtn">Save to Browser</button>
+        <button class="browser-btn" onclick="loadFromBrowser()" data-i18n="loadBrowserBtn">Load from Browser</button>
       </div>
-      <div class="browser-status" id="browserStatus">保存履歴がありません</div>
+      <div class="browser-status" id="browserStatus">No saved data</div>
 
       <hr style="border: none; border-top: 1px solid #2d313c; margin: 15px 0;">
 
-      <p style="font-size: 12px; color: #9ca3af; margin-bottom: 4px;">ファイルとして直接保存/読込 (スマホ推奨)</p>
+      <p style="font-size: 12px; color: #9ca3af; margin-bottom: 4px;" data-i18n="fileSection">Save/Load as File (Recommended for Mobile)</p>
       <div style="margin-bottom: 15px; display: flex; gap: 8px; justify-content: center;">
-        <button class="ok-btn" onclick="saveToTxtFile()" style="background-color: #10b981; flex: 1; margin: 0;">.txtファイルに保存</button>
-        <button class="ok-btn" onclick="triggerFileImport()" style="background-color: #8b5cf6; flex: 1; margin: 0;">.txtファイルから読込</button>
+        <button class="ok-btn" onclick="saveToTxtFile()" style="background-color: #10b981; flex: 1; margin: 0;" data-i18n="saveFileBtn">Save to .txt File</button>
+        <button class="ok-btn" onclick="triggerFileImport()" style="background-color: #8b5cf6; flex: 1; margin: 0;" data-i18n="loadFileBtn">Load from .txt File</button>
         <input type="file" id="txtFileInput" accept=".txt" style="display: none;" onchange="importFromFile(event)">
       </div>
 
       <hr style="border: none; border-top: 1px solid #2d313c; margin: 15px 0;">
 
-      <p style="font-size: 12px; color: #9ca3af; margin-bottom: 4px;">外部テキスト（保存用コード）のインポート/エクスポート</p>
-      <textarea id="saveCodeArea" placeholder="ここにセーブデータを貼り付けるか、コピーしてください。" spellcheck="false"></textarea>
+      <p style="font-size: 12px; color: #9ca3af; margin-bottom: 4px;" data-i18n="codeSection">Import/Export via Text Code</p>
+      <textarea id="saveCodeArea" spellcheck="false"></textarea>
       
       <div style="margin-bottom: 15px; display: flex; gap: 6px; justify-content: center;">
-        <button class="ok-btn" onclick="exportToText()" style="background-color: #3b82f6;">コード書き出し</button>
-        <button class="ok-btn" onclick="importFromText()" style="background-color: #d97706;">コードから読込</button>
+        <button class="ok-btn" onclick="exportToText()" style="background-color: #3b82f6;" data-i18n="exportCodeBtn">Export Code</button>
+        <button class="ok-btn" onclick="importFromText()" style="background-color: #d97706;" data-i18n="importCodeBtn">Import Code</button>
       </div>
 
       <div>
-        <button class="cancel-btn" onclick="closeSaveLoadModal()">閉じる</button>
+        <button class="cancel-btn" onclick="closeSaveLoadModal()" data-i18n="close">Close</button>
       </div>
     </div>
   </div>
@@ -544,6 +544,148 @@
   <script src="capacitor.js"></script>
 
   <script>
+    const i18nDict = {
+      en: {
+        title: "Speed Cube Simulator (N x N)",
+        customN: "Custom N",
+        saveLoad: "💾 Save/Load",
+        scramble: "Scramble",
+        reset: "Reset",
+        image: "Image",
+        history: "📜:",
+        undo: "Undo",
+        clearHistory: "Clear History",
+        sequencePlaceholder: "e.g., R U R' U' y L' (layers map dynamically)",
+        run: "Run",
+        customNTitle: "Enter cube size (N)",
+        ok: "OK",
+        cancel: "Cancel",
+        saveLoadTitle: "💾 Save & Restore",
+        browserSection: "Save/Load to Browser LocalStorage",
+        saveBrowserBtn: "Save to Browser",
+        loadBrowserBtn: "Load from Browser",
+        statusNoSave: "No saved data",
+        statusParseError: "Failed to parse saved data",
+        statusLastSaved: "Last saved: {date} ({size}x{size})",
+        fileSection: "Save/Load as File (Recommended for Mobile)",
+        saveFileBtn: "Save to .txt File",
+        loadFileBtn: "Load from .txt File",
+        codeSection: "Import/Export via Text Code",
+        codePlaceholder: "Paste save code here, or copy from here.",
+        exportCodeBtn: "Export Code",
+        importCodeBtn: "Import Code",
+        close: "Close",
+        alertInvalidN: "Please enter a valid number between 2 and 15.",
+        alertInvalidFormat: "Error: Invalid save data format.",
+        alertBrowserSaveSuccess: "Current puzzle state and history saved to browser!",
+        alertBrowserSaveFail: "Failed to save: ",
+        alertBrowserNoSave: "No saved data found in browser.",
+        alertBrowserLoadFail: "Failed to load: ",
+        alertFileSaveFail: "Failed to save file: ",
+        alertFileLoadFail: "Failed to import. File may be corrupted or unsupported.\nError: ",
+        alertFileError: "An error occurred while reading the file.",
+        alertExportSuccess: "Save code generated and copied to clipboard! Save it to a text file.",
+        alertExportFail: "Failed to export: ",
+        alertImportPlaceholder: "Please enter a code to import.",
+        alertImportFail: "Failed to import. Please check if the save code is correct.\nError: ",
+        alertNoSequence: "No valid layer movements found in the input sequence.",
+        alertImgCopySupport: "Copying images to clipboard is not supported in this browser/environment.",
+        axisA: "Axis A (Top)",
+        axisB: "Axis B (Bot-L)",
+        axisC: "Axis C (Bot-R)",
+      },
+      ja: {
+        title: "スピードキューブシミュレーター (N x N)",
+        customN: "カスタム N",
+        saveLoad: "💾 保存/読込",
+        scramble: "シャッフル",
+        reset: "リセット",
+        image: "画像コピー",
+        history: "📜:",
+        undo: "Undo",
+        clearHistory: "履歴クリア",
+        sequencePlaceholder: "例: R U R' U' y L' (層は動的にマップ)",
+        run: "実行",
+        customNTitle: "キューブサイズ(N)を入力",
+        ok: "OK",
+        cancel: "キャンセル",
+        saveLoadTitle: "💾 保存と復元",
+        browserSection: "ブラウザの一時記憶(LocalStorage)への保存/ロード",
+        saveBrowserBtn: "ブラウザに一時保存",
+        loadBrowserBtn: "一時保存から読込",
+        statusNoSave: "保存履歴がありません",
+        statusParseError: "保存データの解析エラー",
+        statusLastSaved: "最終保存: {date} ({size}x{size})",
+        fileSection: "ファイルとして直接保存/読込 (スマホ推奨)",
+        saveFileBtn: ".txtファイルに保存",
+        loadFileBtn: ".txtファイルから読込",
+        codeSection: "外部テキスト（保存用コード）のインポート/エクスポート",
+        codePlaceholder: "ここにセーブデータを貼り付けるか、コピーしてください。",
+        exportCodeBtn: "コード書き出し",
+        importCodeBtn: "コードから読込",
+        close: "閉じる",
+        alertInvalidN: "2から15の間の正しい数値を入力してください。",
+        alertInvalidFormat: "エラー: 保存データの形式が正しくありません。",
+        alertBrowserSaveSuccess: "現在のパズルの状態と履歴をブラウザに一時保存しました！",
+        alertBrowserSaveFail: "保存に失敗しました: ",
+        alertBrowserNoSave: "ブラウザに保存された一時データが見つかりません。",
+        alertBrowserLoadFail: "読み込みに失敗しました: ",
+        alertFileSaveFail: "ファイルの保存に失敗しました: ",
+        alertFileLoadFail: "インポートに失敗しました。ファイルが破損しているか、非対応ファイルの可能性があります。\nエラー: ",
+        alertFileError: "ファイルの読み込み中にエラーが発生しました。",
+        alertExportSuccess: "セーブデータ用コードを作成し、自動的にクリップボードにコピーしました！メモ帳等に保存してください。",
+        alertExportFail: "エクスポートに失敗しました: ",
+        alertImportPlaceholder: "インポートするコードを入力してください。",
+        alertImportFail: "インポートに失敗しました。セーブコードが正しいか確認してください。\nエラー: ",
+        alertNoSequence: "入力されたシーケンスに現在有効な層の動きが見つかりません。",
+        alertImgCopySupport: "クリップボードへの画像コピーはこのブラウザ/環境ではサポートされていません。",
+        axisA: "A軸 (上部)",
+        axisB: "B軸 (左下)",
+        axisC: "C軸 (右下)",
+      }
+    };
+
+    // システム言語の判定 (日本語以外はすべて英語表示)
+    const currentLang = (navigator.language || navigator.userLanguage || 'en').startsWith('ja') ? 'ja' : 'en';
+
+    function getI18nText(key) {
+      return i18nDict[currentLang][key] || i18nDict['en'][key] || "";
+    }
+
+    function applyLocalization() {
+      // Document metadata
+      document.documentElement.lang = currentLang;
+      document.title = getI18nText('title');
+
+      // Elements with data-i18n attributes
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        const translatedText = getI18nText(key);
+        if (translatedText) {
+          // 子要素(SVGなど)を保護してプレーンテキストのみ書き換え
+          const textNode = Array.from(el.childNodes).find(node => node.nodeType === Node.TEXT_NODE);
+          if (textNode) {
+            textNode.nodeValue = translatedText;
+          } else {
+            el.textContent = translatedText;
+          }
+        }
+      });
+
+      // Placeholders
+      const seqInput = document.getElementById('sequenceInput');
+      if (seqInput) seqInput.placeholder = getI18nText('sequencePlaceholder');
+
+      const codeArea = document.getElementById('saveCodeArea');
+      if (codeArea) codeArea.placeholder = getI18nText('codePlaceholder');
+    }
+
+    // ドキュメントロード完了時に多言語変換を即座に適用
+    window.addEventListener('DOMContentLoaded', () => {
+      applyLocalization();
+      initAndroidAdMob();
+    });
+
     const canvas = document.getElementById("puzzleCanvas");
     const ctx = canvas.getContext("2d");
 
@@ -565,23 +707,20 @@
 
     // --- Capacitor + AdMob (広告) 連携処理 ---
     async function initAndroidAdMob() {
-      // Capacitor環境(Android実機等)でのみ実行する
       if (typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform()) {
         try {
-          // JSモジュールを動的インポート
           const { AdMob, BannerAdSize, BannerAdPosition } = await import('@capacitor-community/admob');
           
           await AdMob.initialize({
             requestTrackingAuthorization: true,
           });
 
-          // 広告バナーの表示
           await AdMob.showBanner({
-            adId: 'ca-app-pub-3940256099942544/6300978111', // テスト用バナーID (本番時は取得したIDに変更)
+            adId: 'ca-app-pub-3940256099942544/6300978111', 
             adSize: BannerAdSize.BANNER,
             position: BannerAdPosition.BOTTOM_CENTER,
             margin: 0,
-            isTesting: true // 本番公開時はfalseに変更
+            isTesting: true 
           });
           console.log("AdMob Banner Loaded successfully.");
         } catch (e) {
@@ -590,12 +729,6 @@
       }
     }
 
-    // ドキュメントロード完了後に広告をロード
-    window.addEventListener('DOMContentLoaded', () => {
-      initAndroidAdMob();
-    });
-
-    // --- 各サイズ向け Notation を動的生成する関数 ---
     function getLayerLabels(N, axis) {
       const labels = [];
       const mid = Math.floor(N / 2);
@@ -717,7 +850,7 @@
 
     function copyCanvasImage() {
       if (!navigator.clipboard || !window.isSecureContext) {
-        alert('クリップボードへの画像コピーはこのブラウザ/環境ではサポートされていません。');
+        alert(getI18nText('alertImgCopySupport'));
         return;
       }
 
@@ -1203,15 +1336,14 @@
       }
     }
 
-    // --- コントロールの動的生成 ---
     function createControls(size) {
       const container = document.getElementById("dynamic-controls");
       container.innerHTML = "";
 
       const axes = [
-        { id: "A", name: "Axis A (Top)", colorClass: "A" },
-        { id: "B", name: "Axis B (Bot-L)", colorClass: "B" },
-        { id: "C", name: "Axis C (Bot-R)", colorClass: "C" }
+        { id: "A", name: getI18nText('axisA'), colorClass: "A" },
+        { id: "B", name: getI18nText('axisB'), colorClass: "B" },
+        { id: "C", name: getI18nText('axisC'), colorClass: "C" }
       ];
 
       const isLargeN = size > 6;
@@ -1328,7 +1460,8 @@
       
       const fixedModes = [2, 3, 4, 5];
       if (fixedModes.includes(size)) {
-        document.getElementById(`mode-${size}`).classList.add('active');
+        const fixedBtn = document.getElementById(`mode-${size}`);
+        if (fixedBtn) fixedBtn.classList.add('active');
       } else {
         const customBtn = document.getElementById('mode-custom');
         customBtn.classList.add('active');
@@ -1352,14 +1485,13 @@
     function submitCustomN() {
       const inputVal = parseInt(document.getElementById("customNInput").value, 10);
       if (isNaN(inputVal) || inputVal < 2 || inputVal > 15) {
-        alert("2から15の間の正しい数値を入力してください。");
+        alert(getI18nText('alertInvalidN'));
         return;
       }
       closeCustomModal();
       switchMode(inputVal);
     }
 
-    // --- 保存 & 読込 ---
     function openSaveLoadModal() {
       document.getElementById("saveLoadModal").style.display = "flex";
       updateBrowserStatusText();
@@ -1383,7 +1515,7 @@
 
     function applySaveDataObject(data) {
       if (!data || !data.size || !data.ball_colors) {
-        alert("エラー: 保存データの形式が正しくありません。");
+        alert(getI18nText('alertInvalidFormat'));
         return false;
       }
       
@@ -1419,9 +1551,9 @@
       try {
         localStorage.setItem("gear_puzzle_autosave", JSON.stringify(dataObj));
         updateBrowserStatusText();
-        alert("現在のパズルの状態と履歴をブラウザに一時保存しました！");
+        alert(getI18nText('alertBrowserSaveSuccess'));
       } catch (err) {
-        alert("保存に失敗しました: " + err.message);
+        alert(getI18nText('alertBrowserSaveFail') + err.message);
       }
     }
 
@@ -1429,7 +1561,7 @@
       try {
         const raw = localStorage.getItem("gear_puzzle_autosave");
         if (!raw) {
-          alert("ブラウザに保存された一時データが見つかりません。");
+          alert(getI18nText('alertBrowserNoSave'));
           return;
         }
         const parsed = JSON.parse(raw);
@@ -1437,7 +1569,7 @@
           closeSaveLoadModal();
         }
       } catch (err) {
-        alert("読み込みに失敗しました: " + err.message);
+        alert(getI18nText('alertBrowserLoadFail') + err.message);
       }
     }
 
@@ -1447,22 +1579,21 @@
       if (raw) {
         try {
           const parsed = JSON.parse(raw);
-          label.textContent = `最終保存: ${parsed.savedAt} (${parsed.size}x${parsed.size})`;
+          const baseString = getI18nText('statusLastSaved');
+          label.textContent = baseString.replace('{date}', parsed.savedAt).replace('{size}', parsed.size);
         } catch(e) {
-          label.textContent = "保存データの解析エラー";
+          label.textContent = getI18nText('statusParseError');
         }
       } else {
-        label.textContent = "保存履歴がありません";
+        label.textContent = getI18nText('statusNoSave');
       }
     }
 
-    // --- TXTファイル形式のセーブ / ロード機能 ---
     function saveToTxtFile() {
       const dataObj = createSaveDataObject();
       if (!dataObj) return;
       try {
         const jsonStr = JSON.stringify(dataObj);
-        // Base64に変換してファイルサイズ軽量化と改行破損防止
         const b64 = btoa(unescape(encodeURIComponent(jsonStr)));
         const blob = new Blob([b64], { type: "text/plain;charset=utf-8" });
         
@@ -1482,7 +1613,7 @@
         document.body.removeChild(link);
         URL.revokeObjectURL(link.href);
       } catch (err) {
-        alert("ファイルの保存に失敗しました: " + err.message);
+        alert(getI18nText('alertFileSaveFail') + err.message);
       }
     }
 
@@ -1501,17 +1632,16 @@
           const jsonStr = decodeURIComponent(escape(atob(b64)));
           const dataObj = JSON.parse(jsonStr);
           if (applySaveDataObject(dataObj)) {
-            alert("ファイルからパズルの状態を完全に復元しました！");
             closeSaveLoadModal();
           }
         } catch (err) {
-          alert("インポートに失敗しました。ファイルが破損しているか、非対応ファイルの可能性があります。\nエラー: " + err.message);
+          alert(getI18nText('alertFileLoadFail') + err.message);
         }
-        event.target.value = ""; // リセット
+        event.target.value = ""; 
       };
       reader.onerror = function() {
-        alert("ファイルの読み込み中にエラーが発生しました。");
-        event.target.value = ""; // リセット
+        alert(getI18nText('alertFileError'));
+        event.target.value = ""; 
       };
       reader.readAsText(file);
     }
@@ -1527,27 +1657,26 @@
         const area = document.getElementById("saveCodeArea");
         area.select();
         document.execCommand('copy');
-        alert("セーブデータ用コードを作成し、自動的にクリップボードにコピーしました！メモ帳等に保存してください。");
+        alert(getI18nText('alertExportSuccess'));
       } catch (err) {
-        alert("エクスポートに失敗しました: " + err.message);
+        alert(getI18nText('alertExportFail') + err.message);
       }
     }
 
     function importFromText() {
       const b64 = document.getElementById("saveCodeArea").value.trim();
       if (!b64) {
-        alert("インポートするコードを入力してください。");
+        alert(getI18nText('alertImportPlaceholder'));
         return;
       }
       try {
         const jsonStr = decodeURIComponent(escape(atob(b64)));
         const dataObj = JSON.parse(jsonStr);
         if (applySaveDataObject(dataObj)) {
-          alert("外部コードからパズル状態を完全復元しました！");
           closeSaveLoadModal();
         }
       } catch (err) {
-        alert("インポートに失敗しました。セーブコードが正しいか確認してください。\nエラー: " + err.message);
+        alert(getI18nText('alertImportFail') + err.message);
       }
     }
 
@@ -1612,7 +1741,7 @@
         puzzle.move_queue = mappedMoves;
         puzzle.trigger_rotation(firstMove[0], firstMove[1], firstMove[2]);
       } else {
-        alert("入力されたシーケンスに現在有効な層の動きが見つかりません。");
+        alert(getI18nText('alertNoSequence'));
       }
     }
 
