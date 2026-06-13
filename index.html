@@ -773,11 +773,6 @@
       if (codeArea) codeArea.placeholder = getI18nText('codePlaceholder');
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      applyLocalization();
-      initAndroidAdMob();
-    });
-
     const canvas = document.getElementById("puzzleCanvas");
     const ctx = canvas.getContext("2d");
 
@@ -796,29 +791,6 @@
     let moveHistory = [];
     let puzzle = null;
     let currentMode = 3;
-
-    async function initAndroidAdMob() {
-      if (typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform()) {
-        try {
-          const { AdMob, BannerAdSize, BannerAdPosition } = await import('@capacitor-community/admob');
-          
-          await AdMob.initialize({
-            requestTrackingAuthorization: true,
-          });
-
-          await AdMob.showBanner({
-            adId: 'ca-app-pub-3940256099942544/6300978111', 
-            adSize: BannerAdSize.BANNER,
-            position: BannerAdPosition.BOTTOM_CENTER,
-            margin: 0,
-            isTesting: true 
-          });
-          console.log("AdMob Banner Loaded successfully.");
-        } catch (e) {
-          console.error("AdMob initialization failed: ", e);
-        }
-      }
-    }
 
     function getLayerLabels(N, axis) {
       const labels = [];
