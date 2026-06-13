@@ -14,7 +14,8 @@ A lightweight, browser-based Cube Simulator that supports various N x N sizes. P
 - **Mobile Ready:** Designed to work smoothly on mobile devices and includes a bridge for [Capacitor](https://capacitorjs.com/) native compilation.
 
 ## How to Use
-Open [pages](https://gosun-kugi.github.io/cube_NxN/)
+Open [pages](https://gosun-kugi.github.io/cube_NxN/).
+
 Simply clone or download this repository, and open in any modern web browser. No local server or installation is required for basic web usage.
 
 ## Acknowledgements
@@ -36,8 +37,10 @@ This project uses scrambling algorithms based on [TNoodle](https://github.com/th
 - **モバイル対応:** スマホやタブレットでも快適に動作する設計となっており、[Capacitor](https://capacitorjs.com/) を利用したネイティブアプリ化にも対応可能な構成です。
 
 ## 使い方
+[pages](https://gosun-kugi.github.io/cube_NxN/)を開く。
+
 本リポジトリをダウンロードまたはクローンし、任意のモダンブラウザで開くだけで実行できます。ローカルサーバーの立ち上げや特別なインストールは不要です。
-[pages](https://gosun-kugi.github.io/cube_NxN/)を開く
+
 
 ## 謝辞
 本プロジェクトのスクランブル機能（シャッフルアルゴリズム）には、World Cube Association (WCA) 公式のスクランブル生成プログラムである [TNoodle](https://github.com/thewca/tnoodle) のアルゴリズムを使用（または参考に）しています。WCAならびにTNoodleのオープンソース貢献者の皆様の素晴らしい取り組みと、スピードキューブコミュニティへの貢献に深く感謝いたします。
