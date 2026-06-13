@@ -4,6 +4,8 @@ A lightweight, browser-based Cube Simulator that supports various N x N sizes. P
 
 [日本語版は下部にあります (Japanese version below)](#キューブ-シミュレーター-n-x-n)
 
+<img width="1191" height="816" alt="Image" src="https://github.com/user-attachments/assets/12a60df9-1f7a-4294-a2d8-d1e6675ae332" />
+
 ## Features
 - **N x N Support:** Play with standard 2x2, 3x3, 4x4, 5x5 cubes, or enter a custom size up to 13x13.
 - **Move Sequence Execution:** Input standard WCA notation (e.g., `R U R' U' y L'`) to apply moves instantly or step-by-step.
@@ -43,4 +45,4 @@ This project uses scrambling algorithms based on [TNoodle](https://github.com/th
 
 
 ## 謝辞
-本プロジェクトのスクランブル機能（シャッフルアルゴリズム）には、World Cube Association (WCA) 公式のスクランブル生成プログラムである [TNoodle](https://github.com/thewca/tnoodle) のアルゴリズムを使用（または参考に）しています。WCAならびにTNoodleのオープンソース貢献者の皆様の素晴らしい取り組みと、スピードキューブコミュニティへの貢献に深く感謝いたします。
+本プロジェクトのスクランブル機能には、World Cube Association (WCA) 公式のスクランブル生成プログラムである [TNoodle](https://github.com/thewca/tnoodle) のアルゴリズムを参考にしています。WCAならびにTNoodleのオープンソース貢献者の皆様の素晴らしい取り組みと、スピードキューブコミュニティへの貢献に深く感謝いたします。
