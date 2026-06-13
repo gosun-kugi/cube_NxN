@@ -95,8 +95,66 @@
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
       border-radius: 12px;
       aspect-ratio: 1000 / 700;
-      touch-action: manipulation;
+      touch-action: none; /* ズーム・ドラッグパンのタッチ制御を100%確実にするためnoneに設定 */
       border: 1px solid #232733;
+      transition: cursor 0.15s;
+    }
+
+    /* ズームコントロール用のスタイリッシュなUIバー */
+    .zoom-controls-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #1e222b;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid #2d313c;
+      margin-top: 6px;
+      width: 100%;
+      box-sizing: border-box;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+    }
+    .zoom-label {
+      font-size: 12px;
+      font-weight: bold;
+      color: #9ca3af;
+      white-space: nowrap;
+    }
+    #zoomRange {
+      flex: 1;
+      accent-color: #3b82f6;
+      cursor: pointer;
+      height: 6px;
+      background: #12141a;
+      border-radius: 3px;
+      outline: none;
+    }
+    .zoom-val {
+      font-size: 13px;
+      font-weight: bold;
+      color: #f3f4f6;
+      min-width: 38px;
+      text-align: right;
+      font-family: monospace;
+    }
+    .zoom-reset-btn {
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: bold;
+      background-color: #374151;
+      color: #e5e7eb;
+      border: 1px solid #4b5563;
+      border-radius: 5px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.1s, color 0.1s;
+    }
+    .zoom-reset-btn:hover {
+      background-color: #4b5563;
+      color: white;
+    }
+    .zoom-reset-btn:active {
+      background-color: #1f2937;
     }
 
     .scramble-btn, .reset-btn, .copy-img-btn {
@@ -221,9 +279,16 @@
     }
     #sequenceInput:focus { border-color: #2563eb; }
 
-    .play-btn {
-      padding: 10px;
+    /* Run & Step ボタンコンテナ */
+    .sequence-btn-group {
+      display: flex;
+      gap: 6px;
       width: 100%;
+    }
+
+    .play-btn {
+      flex: 1.5;
+      padding: 10px;
       font-size: 14px;
       font-weight: bold;
       background-color: #059669;
@@ -232,8 +297,25 @@
       border-radius: 6px;
       cursor: pointer;
       box-shadow: 0 4px 6px rgba(5, 150, 105, 0.2);
+      transition: background-color 0.15s;
     }
     .play-btn:active { background-color: #047857; }
+
+    /* 1 Step 実行ボタンのスタイリング */
+    .step-btn {
+      flex: 1;
+      padding: 10px;
+      font-size: 14px;
+      font-weight: bold;
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(59, 130, 246, 0.2);
+      transition: background-color 0.15s;
+    }
+    .step-btn:active { background-color: #2563eb; }
 
     .history-row {
       width: 100%;
@@ -384,7 +466,7 @@
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        gap: 12px;
+        gap: 6px;
       }
       .canvas-area {
         flex: 1;
@@ -462,6 +544,14 @@
         </button>
         <canvas id="puzzleCanvas" width="1000" height="700"></canvas>
       </div>
+
+      <!-- ズーム操作用パネル -->
+      <div class="zoom-controls-container">
+        <span class="zoom-label" data-i18n="zoomLabel">🔍 Zoom:</span>
+        <input type="range" id="zoomRange" min="1" max="4" step="0.1" value="1" oninput="adjustZoom(this.value)">
+        <span id="zoomVal" class="zoom-val">1.0x</span>
+        <button class="zoom-reset-btn" onclick="resetZoom()" data-i18n="zoomReset">Reset View</button>
+      </div>
     </div>
 
     <div class="controls">
@@ -485,7 +575,10 @@
  
       <div class="sequence-row">
         <input type="text" id="sequenceInput">
-        <button class="play-btn" onclick="playSequence()" data-i18n="run">Run</button>
+        <div class="sequence-btn-group">
+          <button class="play-btn" onclick="playSequence()" data-i18n="run">Run</button>
+          <button class="step-btn" onclick="playNextStep()" data-i18n="step">1 Step</button>
+        </div>
       </div>
 
     </div>
@@ -495,7 +588,7 @@
   <div class="modal-overlay" id="customModal">
     <div class="modal-content">
       <h3 data-i18n="customNTitle">Enter cube size (N)</h3>
-      <input type="number" id="customNInput" value="6" min="2" max="15">
+      <input type="number" id="customNInput" value="6" min="2" max="13">
       <div>
         <button class="ok-btn" onclick="submitCustomN()" data-i18n="ok">OK</button>
         <button class="cancel-btn" onclick="closeCustomModal()" data-i18n="cancel">Cancel</button>
@@ -557,6 +650,7 @@
         clearHistory: "Clear History",
         sequencePlaceholder: "e.g., R U R' U' y L' (layers map dynamically)",
         run: "Run",
+        step: "1 Step",
         customNTitle: "Enter cube size (N)",
         ok: "OK",
         cancel: "Cancel",
@@ -575,7 +669,7 @@
         exportCodeBtn: "Export Code",
         importCodeBtn: "Import Code",
         close: "Close",
-        alertInvalidN: "Please enter a valid number between 2 and 15.",
+        alertInvalidN: "Please enter a valid number between 2 and 13.",
         alertInvalidFormat: "Error: Invalid save data format.",
         alertBrowserSaveSuccess: "Current puzzle state and history saved to browser!",
         alertBrowserSaveFail: "Failed to save: ",
@@ -593,6 +687,8 @@
         axisA: "Axis A (Top)",
         axisB: "Axis B (Bot-L)",
         axisC: "Axis C (Bot-R)",
+        zoomLabel: "🔍 Zoom:",
+        zoomReset: "Reset View"
       },
       ja: {
         title: "スピードキューブシミュレーター (N x N)",
@@ -606,6 +702,7 @@
         clearHistory: "履歴クリア",
         sequencePlaceholder: "例: R U R' U' y L' (層は動的にマップ)",
         run: "実行",
+        step: "1手進む",
         customNTitle: "キューブサイズ(N)を入力",
         ok: "OK",
         cancel: "キャンセル",
@@ -624,7 +721,7 @@
         exportCodeBtn: "コード書き出し",
         importCodeBtn: "コードから読込",
         close: "閉じる",
-        alertInvalidN: "2から15の間の正しい数値を入力してください。",
+        alertInvalidN: "2から13の間の正しい数値を入力してください。",
         alertInvalidFormat: "エラー: 保存データの形式が正しくありません。",
         alertBrowserSaveSuccess: "現在のパズルの状態と履歴をブラウザに一時保存しました！",
         alertBrowserSaveFail: "保存に失敗しました: ",
@@ -642,10 +739,11 @@
         axisA: "A軸 (上部)",
         axisB: "B軸 (左下)",
         axisC: "C軸 (右下)",
+        zoomLabel: "🔍 ズーム:",
+        zoomReset: "ズームリセット"
       }
     };
 
-    // システム言語の判定 (日本語以外はすべて英語表示)
     const currentLang = (navigator.language || navigator.userLanguage || 'en').startsWith('ja') ? 'ja' : 'en';
 
     function getI18nText(key) {
@@ -653,16 +751,13 @@
     }
 
     function applyLocalization() {
-      // Document metadata
       document.documentElement.lang = currentLang;
       document.title = getI18nText('title');
 
-      // Elements with data-i18n attributes
       document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
         const translatedText = getI18nText(key);
         if (translatedText) {
-          // 子要素(SVGなど)を保護してプレーンテキストのみ書き換え
           const textNode = Array.from(el.childNodes).find(node => node.nodeType === Node.TEXT_NODE);
           if (textNode) {
             textNode.nodeValue = translatedText;
@@ -672,7 +767,6 @@
         }
       });
 
-      // Placeholders
       const seqInput = document.getElementById('sequenceInput');
       if (seqInput) seqInput.placeholder = getI18nText('sequencePlaceholder');
 
@@ -680,7 +774,6 @@
       if (codeArea) codeArea.placeholder = getI18nText('codePlaceholder');
     }
 
-    // ドキュメントロード完了時に多言語変換を即座に適用
     window.addEventListener('DOMContentLoaded', () => {
       applyLocalization();
       initAndroidAdMob();
@@ -705,7 +798,6 @@
     let puzzle = null;
     let currentMode = 3;
 
-    // --- Capacitor + AdMob (広告) 連携処理 ---
     async function initAndroidAdMob() {
       if (typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform()) {
         try {
@@ -879,7 +971,6 @@
       }, 'image/png');
     }
 
-    // --- メインパズル物理・論理クラス ---
     class MatrixGearPuzzle {
       constructor(size) {
         this.size = size;
@@ -887,6 +978,10 @@
         const height = (this.side_length * Math.sqrt(3)) / 2;
         this.cx = WIDTH / 2;
         this.cy = 370;
+
+        this.zoomScale = 1.0;
+        this.offsetX = 0;
+        this.offsetY = 0;
 
         this.centers = {
           A: [this.cx, this.cy - (height * 2) / 3],
@@ -908,7 +1003,8 @@
         else if (size === 4) this.ball_radius = 13;
         else if (size <= 6) this.ball_radius = 10;
         else if (size <= 9) this.ball_radius = 7;
-        else this.ball_radius = 4.5;
+        else if (size <= 12) this.ball_radius = 5.5;
+        else this.ball_radius = 4.8;
 
         this.slots = [];
         this.slot_origins = [];
@@ -1180,8 +1276,8 @@
 
       apply_rotation_instantly(axis, ring_idx, direction) {
         this.state_history.push([...this.ball_colors]);
-        
         addMoveToHistory(axis, ring_idx, direction);
+        
         const pKey = `${axis}_${ring_idx}_${direction}`;
         const mappingTable = this.permutation_tables[pKey];
 
@@ -1199,31 +1295,63 @@
         this.state_history = [];
 
         const axes = ["A", "B", "C"];
-        const ring_idxs = Array.from({length: this.size}, (_, i) => i);
-        const dirs = [1, -1];
-       
-        let last_axis = null, last_ring = null, last_dir = null, consecutive_count = 0;
+        const N = this.size;
+        const mid = Math.floor(N / 2);
+        const isOdd = (N % 2 !== 0);
+
+        let lastAxis = null;
+        let secondLastAxis = null;
+        let lastRing = null;
+        let secondLastRing = null;
 
         for (let i = 0; i < steps; i++) {
-          let chosen_axis, chosen_ring, chosen_dir;
+          let axis, ringIdx;
+          
           while (true) {
-            chosen_axis = axes[Math.floor(Math.random() * axes.length)];
-            chosen_ring = ring_idxs[Math.floor(Math.random() * ring_idxs.length)];
-            chosen_dir = dirs[Math.floor(Math.random() * dirs.length)];
-
-            if (last_axis !== null) {
-              if (chosen_axis === last_axis && chosen_ring === last_ring && chosen_dir === -last_dir) continue;
-              if (chosen_axis === last_axis && chosen_ring === last_ring && chosen_dir === last_dir && consecutive_count >= 2) continue;
+            axis = axes[Math.floor(Math.random() * axes.length)];
+            ringIdx = Math.floor(Math.random() * N);
+            if (isOdd && ringIdx === mid) {
+              continue; 
             }
+            
+            if (axis === lastAxis && ringIdx === lastRing) {
+              continue;
+            }
+            if (axis === secondLastAxis && axis === lastAxis && ringIdx === secondLastRing) {
+              continue;
+            }
+
             break;
           }
 
-          this.apply_rotation_instantly(chosen_axis, chosen_ring, chosen_dir);
-          if (chosen_axis === last_axis && chosen_ring === last_ring && chosen_dir === last_dir) consecutive_count++;
-          else consecutive_count = 1;
-          
-          last_axis = chosen_axis; last_ring = chosen_ring; last_dir = chosen_dir;
+          const modifierRoll = Math.random();
+          if (modifierRoll < 0.33) {
+            this.apply_rotation_instantly(axis, ringIdx, 1);
+            this.apply_rotation_instantly(axis, ringIdx, 1);
+            if (moveHistory.length >= 2) {
+              const lastSym = moveHistory[moveHistory.length - 1];
+              const secondLastSym = moveHistory[moveHistory.length - 2];
+              if (lastSym === secondLastSym) {
+                moveHistory.pop();
+                moveHistory.pop();
+                moveHistory.push(lastSym + "2");
+              }
+            }
+          } else if (modifierRoll < 0.66) {
+            this.apply_rotation_instantly(axis, ringIdx, -1);
+          } else {
+            this.apply_rotation_instantly(axis, ringIdx, 1);
+          }
+
+          secondLastAxis = lastAxis;
+          secondLastRing = lastRing;
+          lastAxis = axis;
+          lastRing = ringIdx;
         }
+
+        const display = document.getElementById("historyDisplay");
+        display.textContent = moveHistory.join(" ");
+        display.scrollLeft = display.scrollWidth;
       }
 
       update() {
@@ -1246,6 +1374,11 @@
       draw(ctx) {
         ctx.fillStyle = "#161821";
         ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+        ctx.save();
+        ctx.translate(this.cx + this.offsetX, this.cy + this.offsetY);
+        ctx.scale(this.zoomScale, this.zoomScale);
+        ctx.translate(-this.cx, -this.cy);
 
         const axisColors = {
           A: "rgba(239, 68, 68, 0.4)", B: "rgba(59, 130, 246, 0.4)", C: "rgba(16, 185, 129, 0.4)" 
@@ -1323,6 +1456,8 @@
             this.drawBall(ctx, this.slots[idx][0], this.slots[idx][1], this.ball_colors[idx]);
           }
         }
+
+        ctx.restore();
       }
 
       drawBall(ctx, x, y, color) {
@@ -1451,7 +1586,102 @@
       }
     }
 
-    // --- イベントと操作 ---
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+
+    canvas.addEventListener('mousedown', dragStart);
+    canvas.addEventListener('mousemove', dragMove);
+    canvas.addEventListener('mouseup', dragEnd);
+    canvas.addEventListener('mouseleave', dragEnd);
+
+    canvas.addEventListener('touchstart', dragStart, { passive: false });
+    canvas.addEventListener('touchmove', dragMove, { passive: false });
+    canvas.addEventListener('touchend', dragEnd);
+    canvas.addEventListener('touchcancel', dragEnd);
+
+    function updateCanvasCursor() {
+      if (!puzzle) return;
+      if (puzzle.zoomScale > 1.0) {
+        canvas.style.cursor = isDragging ? 'grabbing' : 'grab';
+      } else {
+        canvas.style.cursor = 'default';
+      }
+    }
+
+    function dragStart(e) {
+      if (!puzzle || puzzle.zoomScale <= 1.0) return;
+      isDragging = true;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = WIDTH / rect.width;
+      const scaleY = HEIGHT / rect.height;
+
+      startX = (clientX - rect.left) * scaleX - puzzle.offsetX;
+      startY = (clientY - rect.top) * scaleY - puzzle.offsetY;
+
+      updateCanvasCursor();
+      if (e.touches) e.preventDefault();
+    }
+
+    function dragMove(e) {
+      if (!isDragging || !puzzle) return;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = WIDTH / rect.width;
+      const scaleY = HEIGHT / rect.height;
+
+      const currentX = (clientX - rect.left) * scaleX;
+      const currentY = (clientY - rect.top) * scaleY;
+
+      puzzle.offsetX = currentX - startX;
+      puzzle.offsetY = currentY - startY;
+
+      const maxOffsetX = 450 * (puzzle.zoomScale - 1);
+      const maxOffsetY = 300 * (puzzle.zoomScale - 1);
+      puzzle.offsetX = Math.max(-maxOffsetX, Math.min(maxOffsetX, puzzle.offsetX));
+      puzzle.offsetY = Math.max(-maxOffsetY, Math.min(maxOffsetY, puzzle.offsetY));
+
+      updateCanvasCursor();
+      if (e.touches) e.preventDefault();
+    }
+
+    function dragEnd() {
+      isDragging = false;
+      updateCanvasCursor();
+    }
+
+    function adjustZoom(val) {
+      if (!puzzle) return;
+      const oldScale = puzzle.zoomScale;
+      puzzle.zoomScale = parseFloat(val);
+      document.getElementById("zoomVal").textContent = puzzle.zoomScale.toFixed(1) + "x";
+
+      if (puzzle.zoomScale <= 1.0) {
+        puzzle.offsetX = 0;
+        puzzle.offsetY = 0;
+      } else {
+        const ratio = (puzzle.zoomScale - 1) / (oldScale > 1 ? (oldScale - 1) : 1);
+        puzzle.offsetX *= ratio;
+        puzzle.offsetY *= ratio;
+      }
+      updateCanvasCursor();
+    }
+
+    function resetZoom() {
+      if (!puzzle) return;
+      puzzle.zoomScale = 1.0;
+      puzzle.offsetX = 0;
+      puzzle.offsetY = 0;
+      document.getElementById("zoomRange").value = "1";
+      document.getElementById("zoomVal").textContent = "1.0x";
+      updateCanvasCursor();
+    }
+
     function switchMode(size) {
       if (puzzle && (puzzle.is_animating || puzzle.move_queue.length > 0)) return;
       currentMode = size;
@@ -1469,6 +1699,7 @@
       }
       
       clearHistory();
+      resetZoom();
       puzzle = new MatrixGearPuzzle(size);
       createControls(size);
     }
@@ -1484,7 +1715,7 @@
 
     function submitCustomN() {
       const inputVal = parseInt(document.getElementById("customNInput").value, 10);
-      if (isNaN(inputVal) || inputVal < 2 || inputVal > 15) {
+      if (isNaN(inputVal) || inputVal < 2 || inputVal > 13) {
         alert(getI18nText('alertInvalidN'));
         return;
       }
@@ -1518,6 +1749,10 @@
         alert(getI18nText('alertInvalidFormat'));
         return false;
       }
+      if (data.size > 13) {
+        alert(getI18nText('alertInvalidN'));
+        return false;
+      }
       
       currentMode = data.size;
       document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
@@ -1531,6 +1766,7 @@
         customBtn.textContent = `${currentMode}x${currentMode}`;
       }
 
+      resetZoom();
       puzzle = new MatrixGearPuzzle(currentMode);
       createControls(currentMode);
 
@@ -1539,7 +1775,7 @@
       puzzle.state_history = [...(data.state_history || [])];
 
       const display = document.getElementById("historyDisplay");
-      display.textContent = formatHistory(moveHistory);
+      display.textContent = moveHistory.join(" ");
       display.scrollLeft = display.scrollWidth;
 
       return true;
@@ -1680,7 +1916,6 @@
       }
     }
 
-    // --- パズル操作指示 ---
     function rotate(axis, ringIdx, dir) {
       if (!puzzle.is_animating && puzzle.move_queue.length === 0) {
         puzzle.trigger_rotation(axis, ringIdx, dir);
@@ -1689,7 +1924,22 @@
 
     function scramblePuzzle() {
       if (!puzzle.is_animating && puzzle.move_queue.length === 0) {
-        const steps = currentMode * 10;
+        let steps = 25; 
+        if (currentMode === 2) {
+          steps = 11; 
+        } else if (currentMode === 3) {
+          steps = 21; 
+        } else if (currentMode === 4) {
+          steps = 40; 
+        } else if (currentMode === 5) {
+          steps = 60; 
+        } else if (currentMode === 6) {
+          steps = 80; 
+        } else if (currentMode === 7) {
+          steps = 100; 
+        } else {
+          steps = currentMode * 14; 
+        }
         puzzle.scramble(steps);
       }
     }
@@ -1709,17 +1959,14 @@
       if (moveHistory.length > 0) {
         moveHistory.pop();
         const display = document.getElementById("historyDisplay");
-        display.textContent = formatHistory(moveHistory);
+        display.textContent = moveHistory.join(" ");
         display.scrollLeft = display.scrollWidth;
       }
     }
 
-    function playSequence() {
-      if (puzzle.is_animating || puzzle.move_queue.length > 0) return;
-      const inputEl = document.getElementById("sequenceInput");
-      const input = inputEl.value.trim();
-      if (!input) return;
-      
+    // 入力シーケンスの共通パース用ヘルパー
+    function parseSequenceString(input) {
+      if (!input) return [];
       const moves = input.split(/\s+/);
       const mappedMoves = [];
       const currentMap = generateMovesMap(currentMode);
@@ -1731,15 +1978,60 @@
         else if (move.endsWith("2'")) { count = 2; baseMove = move.slice(0, -2) + "'"; }
         
         if (currentMap[baseMove]) {
-          for (let i = 0; i < count; i++) mappedMoves.push(currentMap[baseMove]);
+          for (let i = 0; i < count; i++) {
+            mappedMoves.push({
+              params: currentMap[baseMove], // [axis, ringIdx, dir]
+              symbol: move
+            });
+          }
         }
       }
+      return mappedMoves;
+    }
 
-      if (mappedMoves.length > 0) {
-        inputEl.value = "";
-        const firstMove = mappedMoves.shift();
-        puzzle.move_queue = mappedMoves;
-        puzzle.trigger_rotation(firstMove[0], firstMove[1], firstMove[2]);
+    // 「Run」ボタン: シーケンス全体を一括で最後まで連続再生する
+    function playSequence() {
+      if (puzzle.is_animating || puzzle.move_queue.length > 0) return;
+      const inputEl = document.getElementById("sequenceInput");
+      const input = inputEl.value.trim();
+      if (!input) return;
+      
+      const parsed = parseSequenceString(input);
+
+      if (parsed.length > 0) {
+        inputEl.value = ""; // 入力欄をクリア
+        const firstMove = parsed.shift();
+        puzzle.move_queue = parsed.map(m => m.params);
+        puzzle.trigger_rotation(firstMove.params[0], firstMove.params[1], firstMove.params[2]);
+      } else {
+        alert(getI18nText('alertNoSequence'));
+      }
+    }
+
+    // 「1 Step」ボタン: シーケンスを頭から1手だけ実行し、残りのシーケンス文字列を入力欄に残す
+    function playNextStep() {
+      if (puzzle.is_animating || puzzle.move_queue.length > 0) return;
+      const inputEl = document.getElementById("sequenceInput");
+      const input = inputEl.value.trim();
+      if (!input) return;
+
+      // 各手の手順に分解して配列にする
+      const rawMoves = input.split(/\s+/);
+      if (rawMoves.length === 0 || rawMoves[0] === "") return;
+
+      const firstMoveStr = rawMoves[0];
+      const parsedSingle = parseSequenceString(firstMoveStr);
+
+      if (parsedSingle.length > 0) {
+        // 先頭の1手（ダブルターンなどの場合は連動キュー）を適用
+        const firstMoveObj = parsedSingle.shift();
+        puzzle.move_queue = parsedSingle.map(m => m.params);
+        
+        // 実行完了後に残るテキストを再構築して入力欄に戻す
+        rawMoves.shift(); // 先頭の手を消費
+        inputEl.value = rawMoves.join(" ");
+
+        puzzle.trigger_rotation(firstMoveObj.params[0], firstMoveObj.params[1], firstMoveObj.params[2]);
       } else {
         alert(getI18nText('alertNoSequence'));
       }
