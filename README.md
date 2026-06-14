@@ -13,7 +13,7 @@ A lightweight, browser-based Cube Simulator that supports various N x N sizes. P
 - **Undo & History Tracking:** Keep track of your moves with a comprehensive history panel and an Undo function.
 - **Image Copy:** Easily copy the current cube visualization to your clipboard.
 - **Multi-language UI:** Automatically supports English and Japanese based on your browser settings.
-- **Mobile Ready:** Designed to work smoothly on mobile devices and includes a bridge for [Capacitor](https://capacitorjs.com/) native compilation.
+- **Mobile Ready:** Designed to work smoothly on mobile devices.
 
 ## How to Use
 Open [pages](https://gosun-kugi.github.io/cube_NxN/).
@@ -36,7 +36,7 @@ This project uses scrambling algorithms based on [TNoodle](https://github.com/th
 - **Undo ＆ 履歴パネル:** 実行した手順を履歴パネルで確認でき、Undo（1手戻る）機能も搭載しています。
 - **画像コピー:** 現在のキューブの状態を画像としてワンクリックでクリップボードにコピーできます。
 - **多言語対応:** ブラウザの言語設定に応じて、英語と日本語のUIが自動で切り替わります。
-- **モバイル対応:** スマホやタブレットでも快適に動作する設計となっており、[Capacitor](https://capacitorjs.com/) を利用したネイティブアプリ化にも対応可能な構成です。
+- **モバイル対応:** スマホやタブレットでも快適に動作する設計です。
 
 ## 使い方
 [pages](https://gosun-kugi.github.io/cube_NxN/)を開く。
