@@ -1,6 +1,6 @@
 # Cube Simulator (N x N)
 
-A lightweight, browser-based Cube Simulator that supports various N x N sizes. Play, practice algorithms, and manage your cube state entirely in your web browser.
+A lightweight, browser-based Rubik's Cube Simulator that supports various N x N sizes. Play, practice algorithms, and manage your cube state entirely in your web browser.
 
 [日本語版は下部にあります (Japanese version below)](#キューブ-シミュレーター-n-x-n)
 
@@ -27,9 +27,9 @@ Visual Representation: The unique 2D vector layout is inspired by the research p
 
 ---
 
-# キューブ シミュレーター (N x N)
+# ルービックキューブキューブ シミュレーター (N x N)
 
-ブラウザ上で動作する軽量な N x N キューブシミュレーターです。アルゴリズムの練習からパズルの状態管理まで、すべてブラウザ内で完結します。
+ブラウザ上で動作する軽量な N x N ルービックキューブシミュレーターです。アルゴリズムの練習からパズルの状態管理まで、すべてブラウザ内で完結します。
 
 ## 主な機能
 - **N x N 対応:** 2x2, 3x3, 4x4, 5x5の標準サイズに加え、最大13x13までのカスタムサイズ(N)で遊べます。
