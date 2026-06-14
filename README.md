@@ -8,7 +8,7 @@ A lightweight, browser-based Rubik's Cube Simulator that supports various N x N 
 
 ## Features
 - **N x N Support:** Play with standard 2x2, 3x3, 4x4, 5x5 cubes, or enter a custom size up to 13x13.
-- **Move Sequence Execution:** Input standard WCA notation (e.g., `R U R' U' y L'`) to apply moves instantly or step-by-step.
+- **Move Sequence Execution:** Input notation (e.g., `R U R' U' y L'`) to apply moves instantly or step-by-step.
 - **State Save & Load:** Save your cube state and move history directly to your browser's LocalStorage, export as a `.txt` file, or generate a text code for easy sharing.
 - **Undo & History Tracking:** Keep track of your moves with a comprehensive history panel and an Undo function.
 - **Image Copy:** Easily copy the current cube visualization to your clipboard.
@@ -33,7 +33,7 @@ Visual Representation: The unique 2D vector layout is inspired by the research p
 
 ## 主な機能
 - **N x N 対応:** 2x2, 3x3, 4x4, 5x5の標準サイズに加え、最大13x13までのカスタムサイズ(N)で遊べます。
-- **回転記号（シーケンス）の実行:** WCA標準の回転記号（例: `R U R' U' y L'`）を入力し、一括実行や1手ずつのステップ実行が可能です。
+- **回転記号（シーケンス）の実行:** 回転記号（例: `R U R' U' y L'`）を入力し、一括実行や1手ずつのステップ実行が可能です。
 - **セーブ＆ロード:** パズルの状態や手順の履歴をブラウザ(LocalStorage)に保存できるほか、`.txt` ファイルとしての保存・読み込み、テキストコードとしてのエクスポート/インポートに対応しています。
 - **Undo ＆ 履歴パネル:** 実行した手順を履歴パネルで確認でき、Undo（1手戻る）機能も搭載しています。
 - **画像コピー:** 現在のキューブの状態を画像としてワンクリックでクリップボードにコピーできます。
