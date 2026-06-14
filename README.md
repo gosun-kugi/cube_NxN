@@ -23,6 +23,8 @@ Simply clone or download this repository, and open in any modern web browser. No
 ## Acknowledgements
 This project uses scrambling algorithms based on [TNoodle](https://github.com/thewca/tnoodle), the official scramble generator of the World Cube Association (WCA). We deeply appreciate the WCA and all the open-source contributors of TNoodle for their fantastic work and dedication to the speedcubing community.
 
+Visual Representation: The unique 2D vector layout is inspired by the research paper [*"Analysis of Thinking Process When Experts of Solving Rubik's Cube Solve Rubik's Cube"* (2009)](https://dspace.jaist.ac.jp/dspace/handle/10119/8085) by Warayuki Hishida from the Japan Advanced Institute of Science and Technology (JAIST). It works incredibly well for visualizing full layer intersections dynamically in a flat, lightweight format.
+
 ---
 
 # キューブ シミュレーター (N x N)
@@ -43,6 +45,7 @@ This project uses scrambling algorithms based on [TNoodle](https://github.com/th
 
 本リポジトリをダウンロードまたはクローンし、任意のモダンブラウザで開くだけで実行できます。ローカルサーバーの立ち上げや特別なインストールは不要です。
 
+このユニークな同心円展開法は、北陸先端科学技術大学院大学（JAIST）の菱田童之氏による研究論文[『ルービックキューブ攻略時における思考過程の分析』（2009年）](https://dspace.jaist.ac.jp/dspace/handle/10119/8085)から着想を得ています。フラットかつ軽量なフォーマットのままで、すべての層の交差を動的に視覚化するのに驚くほど適しています。
 
 ## 謝辞
 本プロジェクトのスクランブル機能には、World Cube Association (WCA) 公式のスクランブル生成プログラムである [TNoodle](https://github.com/thewca/tnoodle) のアルゴリズムを参考にしています。WCAならびにTNoodleのオープンソース貢献者の皆様の素晴らしい取り組みと、スピードキューブコミュニティへの貢献に深く感謝いたします。
