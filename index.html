@@ -859,15 +859,32 @@
       let formatted = [];
       let currentMove = history[0];
       let count = 1;
+
+      // 1手、2手などの連続状態に応じて文字列を整形するヘルパー関数
+      const appendMove = (move, cnt) => {
+        if (cnt === 1) {
+          return move;
+        } else if (cnt === 2) {
+          // 末尾がプライム（'）ならそれを取り除いて 2 を付与する（F'2 -> F2）
+          if (move.endsWith("'")) {
+            return move.slice(0, -1) + "2";
+          }
+          return move + "2";
+        } else {
+          return move + cnt;
+        }
+      };
+
       for (let i = 1; i < history.length; i++) {
-        if (history[i] === currentMove) { count++; }
-        else {
-          formatted.push(count > 1 ? currentMove + count : currentMove);
+        if (history[i] === currentMove) {
+          count++;
+        } else {
+          formatted.push(appendMove(currentMove, count));
           currentMove = history[i];
           count = 1;
         }
       }
-      formatted.push(count > 1 ? currentMove + count : currentMove);
+      formatted.push(appendMove(currentMove, count));
       return formatted.join(" ");
     }
 
@@ -1302,7 +1319,13 @@
               if (lastSym === secondLastSym) {
                 moveHistory.pop();
                 moveHistory.pop();
-                moveHistory.push(lastSym + "2");
+                
+                // プライム記号（'）が含まれている場合は除去してダブルターンとして追加（例：L' -> L2）
+                let doubleSym = lastSym;
+                if (doubleSym.endsWith("'")) {
+                  doubleSym = doubleSym.slice(0, -1);
+                }
+                moveHistory.push(doubleSym + "2");
               }
             }
           } else if (modifierRoll < 0.66) {
@@ -1318,7 +1341,7 @@
         }
 
         const display = document.getElementById("historyDisplay");
-        display.textContent = moveHistory.join(" ");
+        display.textContent = formatHistory(moveHistory); // 整形された形で再表示
         display.scrollLeft = display.scrollWidth;
       }
 
@@ -1404,7 +1427,7 @@
           const moving_srcs = new Set(this.animated_elements.map(item => item.src_idx));
           for (let idx = 0; idx < this.slots.length; idx++) {
             if (!moving_srcs.has(idx)) {
-              this.drawBall(ctx, this.slots[idx][0], this.slots[idx][1], this.ball_colors[idx]);
+              this.drawBall(ctx, this.slots[idx][0], this.slots[idx][1], this.ball_colors[idx], idx);
             }
           }
           for (let item of this.animated_elements) {
@@ -1412,23 +1435,23 @@
               const curr_ang = item.start_ang + item.sweep * this.anim_progress;
               const x = item.center[0] + item.dist * Math.cos(curr_ang);
               const y = item.center[1] + item.dist * Math.sin(curr_ang);
-              this.drawBall(ctx, x, y, item.color);
+              this.drawBall(ctx, x, y, item.color, item.src_idx);
             } else if (item.type === "linear") {
               const x = item.start_pt[0] + (item.end_pt[0] - item.start_pt[0]) * this.anim_progress;
               const y = item.start_pt[1] + (item.end_pt[1] - item.start_pt[1]) * this.anim_progress;
-              this.drawBall(ctx, x, y, item.color);
+              this.drawBall(ctx, x, y, item.color, item.src_idx);
             }
           }
         } else {
           for (let idx = 0; idx < this.slots.length; idx++) {
-            this.drawBall(ctx, this.slots[idx][0], this.slots[idx][1], this.ball_colors[idx]);
+            this.drawBall(ctx, this.slots[idx][0], this.slots[idx][1], this.ball_colors[idx], idx);
           }
         }
 
         ctx.restore();
       }
 
-      drawBall(ctx, x, y, color) {
+      drawBall(ctx, x, y, color, index) {
         ctx.beginPath();
         ctx.arc(x, y, this.ball_radius, 0, Math.PI * 2);
         ctx.fillStyle = color;
@@ -1436,6 +1459,20 @@
         ctx.lineWidth = this.size > 8 ? 1.0 : 2.0;
         ctx.strokeStyle = "#111318";
         ctx.stroke();
+
+        // // ボール内にインデックス番号を描画
+        // let textColor = "#ffffff";
+        // if (color === COLOR_MAP["YELLOW"] || color === COLOR_MAP["WHITE"] || color === COLOR_MAP["ORANGE"]) {
+        //   textColor = "#111318";
+        // }
+
+        // // ボールの大きさに合わせて数字のフォントサイズを動的に調整
+        // const numFontSize = Math.max(7, Math.floor(this.ball_radius * 1.1));
+        // ctx.font = `bold ${numFontSize}px monospace`;
+        // ctx.fillStyle = textColor;
+        // ctx.textAlign = "center";
+        // ctx.textBaseline = "middle";
+        // ctx.fillText(index.toString(), x, y + 0.5); // Y座標の微調整
       }
     }
 
@@ -1743,7 +1780,7 @@
       puzzle.state_history = [...(data.state_history || [])];
 
       const display = document.getElementById("historyDisplay");
-      display.textContent = moveHistory.join(" ");
+      display.textContent = formatHistory(moveHistory);
       display.scrollLeft = display.scrollWidth;
 
       return true;
@@ -1793,6 +1830,7 @@
       }
     }
 
+    // ファイル保存時も整形済みの履歴ではなく生データを保持するため、moveHistoryオブジェクトをそのままエクスポート
     function saveToTxtFile() {
       const dataObj = createSaveDataObject();
       if (!dataObj) return;
@@ -1927,7 +1965,7 @@
       if (moveHistory.length > 0) {
         moveHistory.pop();
         const display = document.getElementById("historyDisplay");
-        display.textContent = moveHistory.join(" ");
+        display.textContent = formatHistory(moveHistory);
         display.scrollLeft = display.scrollWidth;
       }
     }
