@@ -440,12 +440,11 @@
     @media (min-width: 850px) {
       body {
         padding: 12px;
-        padding-bottom: 70px; /* 大画面でも広告領域を考慮 */
       }
       .container {
         max-width: 1200px;
         width: 100%;
-        height: calc(100vh - 94px); /* 高さを引いてバナー広告領域を完全に回避 */
+        height: 100svh;
         max-height: 850px;
         min-height: 0;
         flex-direction: row;
@@ -1176,15 +1175,15 @@
           if (ang < 0) ang += 2 * Math.PI;
 
           if (origin === "AB") this.ball_colors[idx] = !in_c ? COLOR_MAP["ORANGE"] : COLOR_MAP["RED"];
-          else if (origin === "BC") this.ball_colors[idx] = !in_a ? COLOR_MAP["WHITE"] : COLOR_MAP["YELLOW"];
-          else if (origin === "CA") this.ball_colors[idx] = !in_b ? COLOR_MAP["GREEN"] : COLOR_MAP["BLUE"];
+          else if (origin === "BC") this.ball_colors[idx] = !in_a ? COLOR_MAP["YELLOW"] : COLOR_MAP["WHITE"];
+          else if (origin === "CA") this.ball_colors[idx] = !in_b ? COLOR_MAP["BLUE"] : COLOR_MAP["GREEN"];
           else {
             if (ang >= Math.PI * 1.1 && ang < Math.PI * 1.5) this.ball_colors[idx] = COLOR_MAP["ORANGE"];
             else if (ang >= Math.PI * 1.5 || ang < Math.PI * 0.1) this.ball_colors[idx] = COLOR_MAP["RED"];
-            else if (ang >= Math.PI * 0.5 && ang < Math.PI * 0.9) this.ball_colors[idx] = COLOR_MAP["WHITE"];
-            else if (ang >= Math.PI * 0.1 && ang < Math.PI * 0.5) this.ball_colors[idx] = COLOR_MAP["YELLOW"];
-            else if (ang >= Math.PI * 0.9 && ang < Math.PI * 1.1) this.ball_colors[idx] = COLOR_MAP["GREEN"];
-            else this.ball_colors[idx] = COLOR_MAP["BLUE"];
+            else if (ang >= Math.PI * 0.5 && ang < Math.PI * 0.9) this.ball_colors[idx] = COLOR_MAP["YELLOW"];
+            else if (ang >= Math.PI * 0.1 && ang < Math.PI * 0.5) this.ball_colors[idx] = COLOR_MAP["WHITE"];
+            else if (ang >= Math.PI * 0.9 && ang < Math.PI * 1.1) this.ball_colors[idx] = COLOR_MAP["BLUE"];
+            else this.ball_colors[idx] = COLOR_MAP["GREEN"];
           }
         }
       }
